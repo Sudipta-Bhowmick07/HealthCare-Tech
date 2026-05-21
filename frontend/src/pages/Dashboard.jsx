@@ -8,6 +8,10 @@ function Dashboard() {
 
   const navigate = useNavigate();
 
+  const token = localStorage.getItem("token");
+
+  // OCR STATES
+
   const [selectedFile, setSelectedFile] = useState(null);
 
   const [preview, setPreview] = useState(null);
@@ -20,18 +24,38 @@ function Dashboard() {
 
   const [warnings, setWarnings] = useState([]);
 
-  const token = localStorage.getItem("token");
+  // REMINDER STATES
+
+  const [reminders, setReminders] = useState([]);
+
+  const [medicineName, setMedicineName] = useState("");
+
+  const [dosage, setDosage] = useState("");
+
+  const [frequency, setFrequency] = useState("Once Daily");
+
+  const [durationDays, setDurationDays] = useState("");
+
+  const [times, setTimes] = useState([""]);
 
   useEffect(() => {
 
     if (!token) {
+
       navigate("/");
+
       return;
     }
 
     fetchHistory();
 
+    fetchReminders();
+
   }, []);
+
+  // ==========================
+  // FETCH HISTORY
+  // ==========================
 
   const fetchHistory = async () => {
 
@@ -51,9 +75,37 @@ function Dashboard() {
     } catch (error) {
 
       console.log(error);
-
     }
   };
+
+  // ==========================
+  // FETCH REMINDERS
+  // ==========================
+
+  const fetchReminders = async () => {
+
+    try {
+
+      const response = await axios.get(
+        "http://127.0.0.1:8000/reminders/my-reminders",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setReminders(response.data);
+
+    } catch (error) {
+
+      console.log(error);
+    }
+  };
+
+  // ==========================
+  // FILE CHANGE
+  // ==========================
 
   const handleFileChange = (e) => {
 
@@ -64,11 +116,15 @@ function Dashboard() {
     setPreview(URL.createObjectURL(file));
   };
 
+  // ==========================
+  // OCR UPLOAD
+  // ==========================
+
   const handleUpload = async () => {
 
     if (!selectedFile) {
 
-      alert("Please select a file");
+      alert("Please select file");
 
       return;
     }
@@ -92,9 +148,11 @@ function Dashboard() {
 
       setOcrResult(response.data.ocr_text);
 
-      setMedicines(response.data.medicines);
+      setMedicines(response.data.medicines || []);
 
-      setWarnings(response.data.interaction_warnings);
+      setWarnings(
+        response.data.interaction_warnings || []
+      );
 
       fetchHistory();
 
@@ -107,6 +165,124 @@ function Dashboard() {
       alert("Upload failed");
     }
   };
+
+  // ==========================
+  // FREQUENCY CHANGE
+  // ==========================
+
+  const handleFrequencyChange = (value) => {
+
+    setFrequency(value);
+
+    if (value === "Once Daily") {
+
+      setTimes(["09:00"]);
+    }
+
+    else if (value === "Twice Daily") {
+
+      setTimes([
+        "09:00",
+        "21:00"
+      ]);
+    }
+
+    else if (value === "Thrice Daily") {
+
+      setTimes([
+        "08:00",
+        "14:00",
+        "20:00"
+      ]);
+    }
+  };
+
+  // ==========================
+  // TIME CHANGE
+  // ==========================
+
+  const handleTimeChange = (
+    index,
+    value
+  ) => {
+
+    const updatedTimes = [...times];
+
+    updatedTimes[index] = value;
+
+    setTimes(updatedTimes);
+  };
+
+  // ==========================
+  // ADD REMINDER
+  // ==========================
+
+  const addReminder = async () => {
+
+    try {
+
+      await axios.post(
+        "http://127.0.0.1:8000/reminders/add",
+        {
+          medicine_name: medicineName,
+          dosage: dosage,
+          frequency: frequency,
+          reminder_times: times,
+          duration_days: parseInt(durationDays)
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      fetchReminders();
+
+      setMedicineName("");
+
+      setDosage("");
+
+      setDurationDays("");
+
+      alert("Reminder added");
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert("Failed to add reminder");
+    }
+  };
+
+  // ==========================
+  // DELETE REMINDER
+  // ==========================
+
+  const deleteReminder = async (id) => {
+
+    try {
+
+      await axios.delete(
+        `http://127.0.0.1:8000/reminders/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      fetchReminders();
+
+    } catch (error) {
+
+      console.log(error);
+    }
+  };
+
+  // ==========================
+  // LOGOUT
+  // ==========================
 
   const handleLogout = () => {
 
@@ -136,7 +312,7 @@ function Dashboard() {
 
       </div>
 
-      {/* UPLOAD SECTION */}
+      {/* OCR SECTION */}
 
       <div className="bg-white p-10 rounded-2xl shadow-xl mb-10">
 
@@ -227,7 +403,7 @@ function Dashboard() {
         )
       }
 
-      {/* INTERACTION WARNINGS */}
+      {/* WARNINGS */}
 
       {
         warnings.length > 0 && (
@@ -262,7 +438,7 @@ function Dashboard() {
 
       {/* HISTORY */}
 
-      <div className="bg-white p-10 rounded-2xl shadow-xl">
+      <div className="bg-white p-10 rounded-2xl shadow-xl mb-10">
 
         <h2 className="text-3xl font-bold mb-6">
           Upload History
@@ -320,6 +496,164 @@ function Dashboard() {
             ))
 
           )
+        }
+
+      </div>
+
+      {/* REMINDER SECTION */}
+
+      <div className="bg-white p-10 rounded-2xl shadow-xl">
+
+        <h2 className="text-4xl font-bold mb-8">
+          Medicine Reminders
+        </h2>
+
+        <div className="grid grid-cols-5 gap-5 mb-5">
+
+          <input
+            type="text"
+            placeholder="Medicine Name"
+            value={medicineName}
+            onChange={(e) =>
+              setMedicineName(e.target.value)
+            }
+            className="border p-3 rounded"
+          />
+
+          <input
+            type="text"
+            placeholder="Dosage"
+            value={dosage}
+            onChange={(e) =>
+              setDosage(e.target.value)
+            }
+            className="border p-3 rounded"
+          />
+
+          <select
+            value={frequency}
+            onChange={(e) =>
+              handleFrequencyChange(
+                e.target.value
+              )
+            }
+            className="border p-3 rounded"
+          >
+
+            <option>
+              Once Daily
+            </option>
+
+            <option>
+              Twice Daily
+            </option>
+
+            <option>
+              Thrice Daily
+            </option>
+
+          </select>
+
+          <input
+            type="number"
+            placeholder="Duration Days"
+            value={durationDays}
+            onChange={(e) =>
+              setDurationDays(e.target.value)
+            }
+            className="border p-3 rounded"
+          />
+
+          <button
+            onClick={addReminder}
+            className="bg-green-600 text-white rounded"
+          >
+            Add Reminder
+          </button>
+
+        </div>
+
+        {/* DYNAMIC TIMES */}
+
+        <div className="flex gap-5 mb-8">
+
+          {
+            times.map((time, index) => (
+
+              <input
+                key={index}
+                type="time"
+                value={time}
+                onChange={(e) =>
+                  handleTimeChange(
+                    index,
+                    e.target.value
+                  )
+                }
+                className="border p-3 rounded"
+              />
+
+            ))
+          }
+
+        </div>
+
+        {/* REMINDER LIST */}
+
+        {
+          reminders.map((reminder) => (
+
+            <div
+              key={reminder.id}
+              className="border p-5 rounded-xl mb-5 flex justify-between items-center"
+            >
+
+              <div>
+
+                <p>
+                  <strong>Medicine:</strong>
+                  {" "}
+                  {reminder.medicine_name}
+                </p>
+
+                <p>
+                  <strong>Dosage:</strong>
+                  {" "}
+                  {reminder.dosage}
+                </p>
+
+                <p>
+                  <strong>Frequency:</strong>
+                  {" "}
+                  {reminder.frequency}
+                </p>
+
+                <p>
+                  <strong>Times:</strong>
+                  {" "}
+                  {reminder.reminder_times}
+                </p>
+
+                <p>
+                  <strong>Ends:</strong>
+                  {" "}
+                  {reminder.end_date}
+                </p>
+
+              </div>
+
+              <button
+                onClick={() =>
+                  deleteReminder(reminder.id)
+                }
+                className="bg-red-500 text-white px-5 py-2 rounded"
+              >
+                Delete
+              </button>
+
+            </div>
+
+          ))
         }
 
       </div>

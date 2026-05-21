@@ -11,9 +11,15 @@ from app.database.db import engine, Base
 
 from app.api import reminder_routes
 
+from app.services.reminder_scheduler import (
+    start_scheduler
+)
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+start_scheduler()
 
 
 app.add_middleware(

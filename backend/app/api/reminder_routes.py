@@ -1,6 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException
+)
 
 from sqlalchemy.orm import Session
+
+from datetime import date, timedelta
 
 from app.database.dependencies import get_db
 
@@ -15,22 +21,49 @@ from app.schemas.reminder_schema import (
 from app.auth.security import get_current_user
 
 router = APIRouter(
+    prefix="/reminders",
     tags=["Reminders"]
 )
 
 
 @router.post("/add")
 def add_reminder(
+
     reminder: ReminderCreate,
+
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+
+    current_user: User = Depends(
+        get_current_user
+    )
 ):
 
+    start_date = date.today()
+
+    end_date = start_date + timedelta(
+        days=reminder.duration_days
+    )
+
+    reminder_times_string = ",".join(
+        reminder.reminder_times
+    )
+
     new_reminder = Reminder(
+
         medicine_name=reminder.medicine_name,
+
         dosage=reminder.dosage,
+
         frequency=reminder.frequency,
-        reminder_time=reminder.reminder_time,
+
+        reminder_times=reminder_times_string,
+
+        start_date=start_date,
+
+        end_date=end_date,
+
+        is_active=True,
+
         user_id=current_user.id
     )
 
@@ -41,7 +74,8 @@ def add_reminder(
     db.refresh(new_reminder)
 
     return {
-        "message": "Reminder added successfully"
+        "message":
+            "Reminder added successfully"
     }
 
 
@@ -50,8 +84,12 @@ def add_reminder(
     response_model=list[ReminderResponse]
 )
 def get_my_reminders(
+
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+
+    current_user: User = Depends(
+        get_current_user
+    )
 ):
 
     reminders = db.query(Reminder).filter(
@@ -63,17 +101,26 @@ def get_my_reminders(
 
 @router.delete("/{reminder_id}")
 def delete_reminder(
+
     reminder_id: int,
+
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+
+    current_user: User = Depends(
+        get_current_user
+    )
 ):
 
     reminder = db.query(Reminder).filter(
+
         Reminder.id == reminder_id,
+
         Reminder.user_id == current_user.id
+
     ).first()
 
     if not reminder:
+
         raise HTTPException(
             status_code=404,
             detail="Reminder not found"
@@ -84,5 +131,6 @@ def delete_reminder(
     db.commit()
 
     return {
-        "message": "Reminder deleted"
+        "message":
+            "Reminder deleted"
     }
