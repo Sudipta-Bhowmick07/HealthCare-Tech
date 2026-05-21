@@ -24,6 +24,10 @@ function Dashboard() {
 
   const [warnings, setWarnings] = useState([]);
 
+  // PHARMACY STATES
+
+  const [pharmacies, setPharmacies] = useState([]);
+
   // REMINDER STATES
 
   const [reminders, setReminders] = useState([]);
@@ -36,7 +40,9 @@ function Dashboard() {
 
   const [durationDays, setDurationDays] = useState("");
 
-  const [times, setTimes] = useState([""]);
+  const [times, setTimes] = useState(["09:00"]);
+
+  const [analytics, setAnalytics] = useState(null);
 
   useEffect(() => {
 
@@ -51,7 +57,14 @@ function Dashboard() {
 
     fetchReminders();
 
+    fetchAnalytics();
+
   }, []);
+
+  // DEBUG
+
+  console.log("PHARMACIES STATE:");
+  console.log(pharmacies);
 
   // ==========================
   // FETCH HISTORY
@@ -103,6 +116,31 @@ function Dashboard() {
     }
   };
 
+
+  // ==========================
+  // FETCH ANALYTICS
+  // ==========================
+
+  const fetchAnalytics = async () => {
+
+  try {
+
+    const response = await axios.get(
+      "http://127.0.0.1:8000/adherence/analytics",
+      {
+        headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+    );
+
+    setAnalytics(response.data);
+
+  } catch (error) {
+
+    console.log(error);
+  }
+};
   // ==========================
   // FILE CHANGE
   // ==========================
@@ -281,8 +319,117 @@ function Dashboard() {
   };
 
   // ==========================
+  // FIND PHARMACIES
+  // ==========================
+
+  const searchPharmacies = async () => {
+
+    if (!navigator.geolocation) {
+
+      alert("Geolocation not supported");
+
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+
+      async (position) => {
+
+        try {
+
+          
+          const lat = position.coords.latitude;
+
+          const lon = position.coords.longitude;
+
+          console.log("Latitude:", lat);
+
+          console.log("Longitude:", lon);
+
+          const response = await axios.get(
+
+            `http://127.0.0.1:8000/pharmacy/nearby?lat=${lat}&lon=${lon}`
+
+          );
+
+          console.log("PHARMACY RESPONSE:");
+
+          console.log(response.data);
+
+          setPharmacies(response.data);
+
+        } catch (error) {
+
+          console.log(error);
+
+          alert("Failed to fetch pharmacies");
+        }
+      },
+
+      (error) => {
+
+        console.log(error);
+
+        alert("Location permission denied");
+      }
+    );
+  };
+
+  // ==========================
   // LOGOUT
   // ==========================
+
+  const markTaken = async (id) => {
+
+  try {
+
+    await axios.post(
+      `http://127.0.0.1:8000/adherence/taken/${id}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    fetchAnalytics();
+    alert("Medicine marked as taken");
+    
+
+  } catch (error) {
+
+    console.log(error);
+
+    alert("Failed");
+  }
+};
+
+
+  const markMissed = async (id) => {
+
+    try {
+
+      await axios.post(
+        `http://127.0.0.1:8000/adherence/missed/${id}`,
+        {},
+        {
+          headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+      );
+      
+      fetchAnalytics();
+      alert("Medicine marked as missed");
+    } 
+    catch (error) {
+
+      console.log(error);
+
+      alert("Failed");
+    }
+  };
 
   const handleLogout = () => {
 
@@ -500,9 +647,61 @@ function Dashboard() {
 
       </div>
 
-      {/* REMINDER SECTION */}
 
-      <div className="bg-white p-10 rounded-2xl shadow-xl">
+{/* ANALYTICS SECTION */}
+
+{
+  analytics && (
+
+    <div className="bg-white p-10 rounded-2xl shadow-xl mb-10">
+
+      <h2 className="text-3xl font-bold mb-6">
+        Medicine Adherence Analytics
+      </h2>
+
+      <div className="grid grid-cols-3 gap-5">
+
+        <div className="bg-green-100 p-5 rounded-xl">
+          <h3 className="text-xl font-bold">
+            Taken
+          </h3>
+
+          <p className="text-3xl">
+            {analytics.total_taken}
+          </p>
+        </div>
+
+        <div className="bg-yellow-100 p-5 rounded-xl">
+          <h3 className="text-xl font-bold">
+            Missed
+          </h3>
+
+          <p className="text-3xl">
+            {analytics.total_missed}
+          </p>
+        </div>
+
+        <div className="bg-blue-100 p-5 rounded-xl">
+          <h3 className="text-xl font-bold">
+            Adherence %
+          </h3>
+
+          <p className="text-3xl">
+            {analytics.adherence_rate}%
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+
+  )
+}
+
+{/* REMINDER SECTION */}
+     
+
+      <div className="bg-white p-10 rounded-2xl shadow-xl mb-10">
 
         <h2 className="text-4xl font-bold mb-8">
           Medicine Reminders
@@ -573,8 +772,6 @@ function Dashboard() {
 
         </div>
 
-        {/* DYNAMIC TIMES */}
-
         <div className="flex gap-5 mb-8">
 
           {
@@ -597,8 +794,6 @@ function Dashboard() {
           }
 
         </div>
-
-        {/* REMINDER LIST */}
 
         {
           reminders.map((reminder) => (
@@ -641,7 +836,27 @@ function Dashboard() {
                 </p>
 
               </div>
+              <div className="flex gap-3 mt-4">
 
+  <button
+    onClick={() =>
+      markTaken(reminder.id)
+    }
+    className="bg-green-500 text-white px-4 py-2 rounded"
+  >
+    Taken
+  </button>
+
+  <button
+    onClick={() =>
+      markMissed(reminder.id)
+    }
+    className="bg-yellow-500 text-white px-4 py-2 rounded"
+  >
+    Missed
+  </button>
+
+</div>
               <button
                 onClick={() =>
                   deleteReminder(reminder.id)
@@ -655,6 +870,87 @@ function Dashboard() {
 
           ))
         }
+
+      </div>
+
+      {/* NEARBY PHARMACIES */}
+
+      <div className="bg-white p-10 rounded-2xl shadow-xl mt-10">
+
+        <h2 className="text-3xl font-bold mb-6">
+
+          Nearby Pharmacies
+
+        </h2>
+
+        <button
+          onClick={searchPharmacies}
+          className="bg-blue-600 text-white px-8 py-3 rounded-xl mb-6"
+        >
+          Find Nearby Pharmacies
+        </button>
+
+        {
+  pharmacies.length > 0 ? (
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+      {
+        pharmacies.map((pharmacy, index) => (
+
+          <div
+            key={index}
+            className="border p-5 rounded-xl bg-white shadow"
+          >
+
+            <h3 className="text-xl font-bold mb-3">
+
+              {
+                pharmacy.name ||
+                "Unknown Pharmacy"
+              }
+
+            </h3>
+
+            <p className="mb-3 text-gray-700">
+
+              {
+                pharmacy.address ||
+                "Address not available"
+              }
+
+            </p>
+
+            <p className="text-sm text-green-600 mb-3">
+
+              Source:
+              {" "}
+              {pharmacy.source}
+
+            </p>
+
+            <a
+              href={pharmacy.map_url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-600 underline"
+            >
+              Open in Maps
+            </a>
+
+          </div>
+
+        ))
+      }
+
+    </div>
+
+  ) : (
+
+    <p>No pharmacies found yet</p>
+
+  )
+}
 
       </div>
 

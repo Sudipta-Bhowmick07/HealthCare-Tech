@@ -11,6 +11,12 @@ from app.database.db import engine, Base
 
 from app.api import reminder_routes
 
+from app.api import adherence_routes
+
+from app.models.adherence_model import Adherence
+
+from app.api import pharmacy_routes
+
 from app.services.reminder_scheduler import (
     start_scheduler
 )
@@ -41,6 +47,15 @@ app.include_router(
 
 app.include_router(
     reminder_routes.router
+)
+
+app.include_router(
+    pharmacy_routes.router
+)
+
+
+app.include_router(
+    adherence_routes.router
 )
 
 @app.get("/")
