@@ -4,6 +4,13 @@ import axios from "axios";
 
 import { useNavigate } from "react-router-dom";
 
+import {
+  LogOut,
+  HeartPulse,
+  Upload,
+  FileImage
+} from "lucide-react";
+
 function Dashboard() {
 
   const navigate = useNavigate();
@@ -44,6 +51,8 @@ function Dashboard() {
 
   const [analytics, setAnalytics] = useState(null);
 
+  const [user, setUser] = useState(null);
+
   useEffect(() => {
 
     if (!token) {
@@ -52,6 +61,8 @@ function Dashboard() {
 
       return;
     }
+
+    fetchUser();
 
     fetchHistory();
 
@@ -66,6 +77,26 @@ function Dashboard() {
   console.log("PHARMACIES STATE:");
   console.log(pharmacies);
 
+  const fetchUser = async () => {
+
+  try {
+
+    const response = await axios.get(
+      "http://127.0.0.1:8000/auth/me",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setUser(response.data);
+
+  } catch (error) {
+
+    console.log(error);
+  }
+};
   // ==========================
   // FETCH HISTORY
   // ==========================
@@ -444,58 +475,337 @@ function Dashboard() {
 
       {/* HEADER */}
 
-      <div className="flex justify-between items-center mb-10">
+      <div className="mb-12">
 
-        <h1 className="text-6xl font-bold text-blue-600">
-          MedAssist Dashboard
-        </h1>
+  <div className="flex justify-between items-center">
 
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 text-white px-6 py-3 rounded-xl"
-        >
-          Logout
-        </button>
+    <div>
 
-      </div>
+      <div className="flex items-center gap-4">
 
-      {/* OCR SECTION */}
-
-      <div className="bg-white p-10 rounded-2xl shadow-xl mb-10">
-
-        <h2 className="text-4xl font-bold mb-8">
-          Upload Prescription
-        </h2>
-
-        <div className="flex items-center gap-5 mb-6">
-
-          <input
-            type="file"
-            onChange={handleFileChange}
+        <div className="
+          w-14 h-14
+          rounded-2xl
+          bg-gradient-to-r
+          from-blue-600
+          via-indigo-600
+          to-cyan-500
+          flex
+          items-center
+          justify-center
+          shadow-lg
+        ">
+          <HeartPulse
+            size={28}
+            className="text-white"
           />
+        </div>
 
-          <button
-            onClick={handleUpload}
-            className="bg-blue-600 text-white px-8 py-3 rounded-xl"
-          >
-            Upload
-          </button>
+        <div>
+
+          <h1 className="
+            text-5xl
+            font-extrabold
+            bg-gradient-to-r
+            from-blue-600
+            via-indigo-600
+            to-cyan-500
+            bg-clip-text
+            text-transparent
+          ">
+            MedAssist AI
+          </h1>
+
+          <p className="text-gray-500 mt-1">
+            Smart Healthcare Assistant
+          </p>
 
         </div>
 
-        {
-          preview && (
+      </div>
 
-            <img
-              src={preview}
-              alt="preview"
-              className="w-[400px] rounded-xl border"
-            />
+      <div className="mt-6">
 
-          )
-        }
+        <h2 className="text-3xl font-bold text-slate-800">
+
+          Hello,
+          {" "}
+          <span className="
+            bg-gradient-to-r
+            from-blue-600
+            to-cyan-500
+            bg-clip-text
+            text-transparent
+          ">
+            {user?.full_name || "User"}
+          </span>
+          👋
+
+        </h2>
+
+        <p className="text-gray-500 mt-2">
+          Welcome back to your health dashboard.
+        </p>
 
       </div>
+
+    </div>
+
+    <button
+      onClick={handleLogout}
+      className="
+        flex
+        items-center
+        gap-2
+        px-6
+        py-3
+        rounded-2xl
+        bg-red-500
+        hover:bg-red-600
+        text-white
+        transition-all
+      "
+    >
+      <LogOut size={18} />
+      Logout
+    </button>
+
+  </div>
+
+</div>
+
+      {/* OCR SECTION */}
+
+<div
+  className="
+    bg-white/70
+    backdrop-blur-xl
+    border border-white/50
+    rounded-[32px]
+    shadow-xl
+    p-10
+    mb-10
+  "
+>
+
+  <div className="flex items-center gap-4 mb-8">
+
+    <div
+      className="
+        w-14
+        h-14
+        rounded-2xl
+        bg-gradient-to-r
+        from-blue-600
+        via-indigo-600
+        to-cyan-500
+        flex
+        items-center
+        justify-center
+        shadow-lg
+      "
+    >
+      <Upload
+        size={28}
+        className="text-white"
+      />
+    </div>
+
+    <div>
+
+      <h2 className="text-4xl font-bold text-slate-800">
+        Upload Prescription
+      </h2>
+
+      <p className="text-gray-500 mt-1">
+        Upload a prescription image for AI analysis
+      </p>
+
+    </div>
+
+  </div>
+
+  <div
+    className="
+      border-2
+      border-dashed
+      border-blue-200
+      rounded-3xl
+      p-12
+      text-center
+      bg-gradient-to-br
+      from-blue-50
+      to-cyan-50
+      hover:border-blue-500
+      transition-all
+      duration-300
+    "
+  >
+
+    <FileImage
+      size={64}
+      className="
+        mx-auto
+        mb-4
+        text-blue-500
+      "
+    />
+
+    <h3 className="text-2xl font-semibold text-slate-800 mb-2">
+      Drag & Drop Prescription
+    </h3>
+
+    <p className="text-gray-500 mb-6">
+      JPG, PNG or PDF files
+    </p>
+
+    <input
+  id="prescription-upload"
+  type="file"
+  onChange={handleFileChange}
+  className="hidden"
+/>
+
+<div className="flex items-center justify-center gap-4 flex-wrap">
+
+  <label
+    htmlFor="prescription-upload"
+    className="
+      h-14
+      px-6
+      inline-flex
+      items-center
+      gap-3
+      rounded-2xl
+      bg-white
+      border
+      border-blue-200
+      cursor-pointer
+      hover:border-blue-500
+      hover:shadow-md
+      transition-all
+      font-medium
+      text-slate-700
+    "
+  >
+    <FileImage size={20} />
+    Choose Prescription File
+  </label>
+
+  {selectedFile && (
+    <div
+      className="
+        h-14
+        px-4
+        inline-flex
+        items-center
+        gap-2
+        rounded-2xl
+        bg-blue-100
+        text-blue-700
+        text-sm
+        font-medium
+        max-w-[280px]
+        overflow-hidden
+        whitespace-nowrap
+        text-ellipsis
+      "
+    >
+      <FileImage size={16} />
+      {selectedFile.name}
+    </div>
+  )}
+
+  <button
+    onClick={handleUpload}
+    className="
+      h-14
+      px-8
+      rounded-2xl
+      text-white
+      font-semibold
+      bg-gradient-to-r
+      from-blue-600
+      via-indigo-600
+      to-cyan-500
+      shadow-lg
+      hover:scale-105
+      transition-all
+    "
+  >
+    Upload Prescription
+  </button>
+</div>
+</div>
+  {
+    preview && (
+
+      <div className="mt-10">
+
+  <h3
+    className="
+      text-xl
+      font-bold
+      text-slate-800
+      mb-5
+    "
+  >
+    Prescription Preview
+  </h3>
+
+  <div
+    className="
+      inline-block
+      bg-white
+      p-4
+      rounded-3xl
+      shadow-xl
+      border
+      border-slate-100
+    "
+  >
+
+    <img
+      src={preview}
+      alt="preview"
+      className="
+        w-[350px]
+        rounded-2xl
+      "
+    />
+
+    <div className="mt-4">
+
+      <p
+        className="
+          text-sm
+          text-slate-500
+        "
+      >
+        Selected File
+      </p>
+
+      <p
+        className="
+          font-semibold
+          text-slate-800
+          truncate
+          max-w-[320px]
+        "
+      >
+        {selectedFile?.name}
+      </p>
+
+    </div>
+
+  </div>
+
+</div>
+
+    )
+  }
+
+</div>
 
       {/* OCR RESULT */}
 
