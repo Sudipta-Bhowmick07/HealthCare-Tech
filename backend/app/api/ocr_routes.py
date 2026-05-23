@@ -189,6 +189,40 @@ def get_history(
     return history
 
 
+
+
+@router.delete("/history/{prescription_id}")
+def delete_history(
+    prescription_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+
+    prescription = db.query(
+        Prescription
+    ).filter(
+        Prescription.id == prescription_id,
+        Prescription.user_id == current_user.id
+    ).first()
+
+    if not prescription:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Prescription not found"
+        )
+
+    db.delete(prescription)
+
+    db.commit()
+
+    return {
+        "message": "Prescription deleted successfully"
+    }
+
+
+
+
 @router.get("/download/{filename}")
 def download_pdf(filename: str):
 

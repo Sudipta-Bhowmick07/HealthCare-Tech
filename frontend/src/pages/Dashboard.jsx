@@ -6,9 +6,24 @@ import { useNavigate } from "react-router-dom";
 
 import {
   LogOut,
+  History,
+  Pill,
+  FileText,
+  Download,
+  Calendar,
   HeartPulse,
+  Bell,
+  MapPin,
+  Clock,
+  PlusCircle,
+  CheckCircle,
+  AlertCircle,
+  Trash2,
   Upload,
-  FileImage
+  FileImage,
+  BarChart3,
+  AlertTriangle,
+  Target
 } from "lucide-react";
 
 function Dashboard() {
@@ -39,6 +54,14 @@ function Dashboard() {
 
   const [reminders, setReminders] = useState([]);
 
+  const [reminderForm, setReminderForm] = useState({
+  medicine_name: "",
+  dosage: "",
+  frequency: 1,
+  duration_days: 7,
+  reminder_times: [""]
+  });
+
   const [medicineName, setMedicineName] = useState("");
 
   const [dosage, setDosage] = useState("");
@@ -52,6 +75,12 @@ function Dashboard() {
   const [analytics, setAnalytics] = useState(null);
 
   const [user, setUser] = useState(null);
+
+  const [selectedItems, setSelectedItems] = useState([]);
+
+
+
+
 
   useEffect(() => {
 
@@ -122,6 +151,75 @@ function Dashboard() {
     }
   };
 
+
+  // ==========================
+  // DELETE UPLOAD PRESCRIPTION
+  // ==========================
+
+  const handleSelect = (id) => {
+
+  if (selectedItems.includes(id)) {
+
+    setSelectedItems(
+      selectedItems.filter(
+        itemId => itemId !== id
+      )
+    );
+
+  } else {
+
+    setSelectedItems([
+      ...selectedItems,
+      id
+    ]);
+
+  }
+
+};
+
+  const deleteSelected = async () => {
+
+  const token =
+    localStorage.getItem("token");
+
+  try {
+
+    await Promise.all(
+
+      selectedItems.map((id) =>
+
+        axios.delete(
+          `http://127.0.0.1:8000/ocr/history/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        )
+
+      )
+
+    );
+
+    setHistory(
+
+      history.filter(
+        item =>
+          !selectedItems.includes(item.id)
+      )
+
+    );
+
+    setSelectedItems([]);
+
+  } catch (error) {
+
+    alert("Delete failed");
+
+  }
+
+};
+
   // ==========================
   // FETCH REMINDERS
   // ==========================
@@ -146,6 +244,8 @@ function Dashboard() {
       console.log(error);
     }
   };
+
+  
 
 
   // ==========================
@@ -471,8 +571,16 @@ function Dashboard() {
 
   return (
 
-    <div className="min-h-screen bg-gray-100 p-10">
-
+<div
+  className="
+    min-h-screen
+    p-10
+    bg-gradient-to-br
+    from-sky-50
+    via-blue-50
+    to-cyan-100
+  "
+>
       {/* HEADER */}
 
       <div className="mb-12">
@@ -895,67 +1003,236 @@ function Dashboard() {
 
       {/* HISTORY */}
 
-      <div className="bg-white p-10 rounded-2xl shadow-xl mb-10">
+<div className="bg-white p-10 rounded-3xl shadow-xl mb-10">
 
-        <h2 className="text-3xl font-bold mb-6">
-          Upload History
-        </h2>
+  <div className="flex items-center gap-4 mb-8">
 
-        {
-          history.length === 0 ? (
+    <div
+      className="
+        w-14
+        h-14
+        rounded-2xl
+        bg-gradient-to-r
+        from-blue-600
+        via-indigo-600
+        to-cyan-500
+        flex
+        items-center
+        justify-center
+        text-white
+        shadow-lg
+      "
+    >
+      <History size={28} />
+    </div>
 
-            <p>No history found</p>
+   <div className="flex-1">
 
-          ) : (
+    <div className="flex items-center justify-between">
 
-            history.map((item, index) => (
+      <h2 className="text-3xl font-bold">
+        Upload History
+      </h2>
 
-              <div
-                key={index}
-                className="border p-5 rounded-xl mb-5"
-              >
+      {
+        selectedItems.length > 0 && (
 
-                <p className="font-semibold mb-2">
+          <button
+            onClick={deleteSelected}
+            className="
+              px-5
+              py-3
+              rounded-xl
+              bg-red-500
+              text-white
+              font-semibold
+              hover:bg-red-600
+              transition
+            "
+          >
+            Delete Selected ({selectedItems.length})
+          </button>
 
-                  File:
-                  {" "}
-                  {item?.filename}
+        )
+      }
 
-                </p>
+    </div>
+      <p className="text-slate-500">
+        Previously analyzed prescriptions
+      </p>
 
-                <p className="mb-2">
+    </div>
 
-                  Medicines:
-                  {" "}
-                  {item?.medicines}
+  </div>
 
-                </p>
+  {history.length === 0 ? (
 
-                <p className="mb-2">
+    <div
+      className="
+        text-center
+        py-16
+        rounded-3xl
+        bg-slate-50
+        border
+        border-dashed
+        border-slate-300
+      "
+    >
+      <FileText
+        size={50}
+        className="mx-auto text-slate-400 mb-4"
+      />
 
-                  Date:
-                  {" "}
-                  {item?.created_at}
+      <p className="text-slate-500 text-lg">
+        No prescription history found
+      </p>
+    </div>
 
-                </p>
+  ) : (
 
-                <a
-                  href={`http://127.0.0.1:8000${item?.pdf_download}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-blue-600 underline"
-                >
-                  Download PDF
-                </a>
+    <div className="grid gap-6">
+
+      {history.map((item, index) => (
+
+        <div
+          key={index}
+          className="
+            bg-gradient-to-br
+            from-white
+            to-slate-50
+            border
+            border-slate-200
+            rounded-3xl
+            p-6
+            shadow-md
+            hover:shadow-xl
+            hover:-translate-y-1
+            transition-all
+            duration-300
+          "
+        >
+          <div className="flex justify-between items-start">
+
+  <input
+    type="checkbox"
+    checked={selectedItems.includes(item.id)}
+    onChange={() => handleSelect(item.id)}
+    className="
+      w-5
+      h-5
+      accent-blue-600
+      cursor-pointer
+    "
+  />
+
+</div>
+
+          <div className="flex justify-between items-start">
+
+            <div>
+
+              <div className="flex items-center gap-3 mb-3">
+
+                <FileText
+                  size={20}
+                  className="text-blue-600"
+                />
+
+                <h3 className="font-bold text-lg text-slate-800">
+
+                  Prescription #{index + 1}
+
+                </h3>
 
               </div>
 
-            ))
+              <p className="text-slate-600 mb-4 break-all">
 
-          )
-        }
+                {item?.filename}
 
-      </div>
+              </p>
+
+            </div>
+
+            <a
+              href={`http://127.0.0.1:8000${item?.pdf_download}`}
+              target="_blank"
+              rel="noreferrer"
+              className="
+                flex
+                items-center
+                gap-2
+                px-4
+                py-2
+                rounded-xl
+                bg-blue-600
+                text-white
+                hover:bg-blue-700
+                transition-all
+              "
+            >
+              <Download size={16} />
+              PDF
+            </a>
+
+          </div>
+
+          <div
+            className="
+              flex
+              items-center
+              gap-3
+              bg-blue-50
+              rounded-2xl
+              p-4
+              mb-4
+            "
+          >
+
+            <Pill
+              size={20}
+              className="text-blue-600"
+            />
+
+            <div>
+
+              <p className="text-sm text-slate-500">
+                Medicines Detected
+              </p>
+
+              <p className="font-semibold text-slate-800">
+                {item?.medicines}
+              </p>
+
+            </div>
+
+          </div>
+
+          <div
+            className="
+              flex
+              items-center
+              gap-2
+              text-sm
+              text-slate-500
+            "
+          >
+
+            <Calendar size={16} />
+
+            {item?.created_at}
+
+          </div>
+
+        </div>
+
+      ))}
+
+    </div>
+
+  )}
+
+</div>
 
 
 {/* ANALYTICS SECTION */}
@@ -963,42 +1240,205 @@ function Dashboard() {
 {
   analytics && (
 
-    <div className="bg-white p-10 rounded-2xl shadow-xl mb-10">
+    <div className="bg-white p-10 rounded-3xl shadow-xl mb-10">
 
-      <h2 className="text-3xl font-bold mb-6">
-        Medicine Adherence Analytics
-      </h2>
+      <div className="flex items-center gap-4 mb-8">
 
-      <div className="grid grid-cols-3 gap-5">
+        <div
+          className="
+            w-14
+            h-14
+            rounded-2xl
+            bg-gradient-to-r
+            from-blue-600
+            via-indigo-600
+            to-cyan-500
+            flex
+            items-center
+            justify-center
+            text-white
+            shadow-lg
+          "
+        >
+          <BarChart3 size={28} />
+        </div>
 
-        <div className="bg-green-100 p-5 rounded-xl">
-          <h3 className="text-xl font-bold">
-            Taken
-          </h3>
+        <div>
 
-          <p className="text-3xl">
+          <h2 className="text-4xl font-bold text-slate-800">
+            Medicine Adherence Analytics
+          </h2>
+
+          <p className="text-slate-500">
+            Track your medication consistency
+          </p>
+
+        </div>
+
+      </div>
+
+      {/* Progress Bar */}
+
+      <div className="mb-10">
+
+        <div className="flex justify-between mb-3">
+
+          <span className="font-semibold text-slate-700">
+            Overall Adherence
+          </span>
+
+          <span className="font-bold text-blue-600">
+            {analytics.adherence_rate}%
+          </span>
+
+        </div>
+
+        <div
+          className="
+            w-full
+            h-5
+            bg-slate-200
+            rounded-full
+            overflow-hidden
+          "
+        >
+
+          <div
+            className="
+              h-full
+              rounded-full
+              bg-gradient-to-r
+              from-green-500
+              via-blue-500
+              to-cyan-500
+              transition-all
+              duration-700
+            "
+            style={{
+              width: `${analytics.adherence_rate}%`
+            }}
+          />
+
+        </div>
+
+      </div>
+
+      {/* Analytics Cards */}
+
+      <div className="grid md:grid-cols-3 gap-6">
+
+        {/* Taken */}
+
+        <div
+          className="
+            bg-green-50
+            border
+            border-green-200
+            rounded-3xl
+            p-6
+            shadow-sm
+          "
+        >
+
+          <div className="flex items-center gap-3 mb-4">
+
+            <CheckCircle
+              size={28}
+              className="text-green-600"
+            />
+
+            <h3 className="font-semibold text-slate-700">
+              Medicines Taken
+            </h3>
+
+          </div>
+
+          <p
+            className="
+              text-5xl
+              font-bold
+              text-green-600
+            "
+          >
             {analytics.total_taken}
           </p>
+
         </div>
 
-        <div className="bg-yellow-100 p-5 rounded-xl">
-          <h3 className="text-xl font-bold">
-            Missed
-          </h3>
+        {/* Missed */}
 
-          <p className="text-3xl">
+        <div
+          className="
+            bg-yellow-50
+            border
+            border-yellow-200
+            rounded-3xl
+            p-6
+            shadow-sm
+          "
+        >
+
+          <div className="flex items-center gap-3 mb-4">
+
+            <AlertTriangle
+              size={28}
+              className="text-yellow-600"
+            />
+
+            <h3 className="font-semibold text-slate-700">
+              Missed Doses
+            </h3>
+
+          </div>
+
+          <p
+            className="
+              text-5xl
+              font-bold
+              text-yellow-600
+            "
+          >
             {analytics.total_missed}
           </p>
+
         </div>
 
-        <div className="bg-blue-100 p-5 rounded-xl">
-          <h3 className="text-xl font-bold">
-            Adherence %
-          </h3>
+        {/* Adherence */}
 
-          <p className="text-3xl">
+        <div
+          className="
+            bg-blue-50
+            border
+            border-blue-200
+            rounded-3xl
+            p-6
+            shadow-sm
+          "
+        >
+
+          <div className="flex items-center gap-3 mb-4">
+
+            <Target
+              size={28}
+              className="text-blue-600"
+            />
+
+            <h3 className="font-semibold text-slate-700">
+              Adherence Rate
+            </h3>
+
+          </div>
+
+          <p
+            className="
+              text-5xl
+              font-bold
+              text-blue-600
+            "
+          >
             {analytics.adherence_rate}%
           </p>
+
         </div>
 
       </div>
@@ -1009,172 +1449,465 @@ function Dashboard() {
 }
 
 {/* REMINDER SECTION */}
-     
 
-      <div className="bg-white p-10 rounded-2xl shadow-xl mb-10">
+<div className="bg-white p-10 rounded-3xl shadow-xl mb-10">
 
-        <h2 className="text-4xl font-bold mb-8">
-          Medicine Reminders
-        </h2>
+  <div className="flex items-center gap-4 mb-8">
 
-        <div className="grid grid-cols-5 gap-5 mb-5">
+    <div
+      className="
+        w-14
+        h-14
+        rounded-2xl
+        bg-gradient-to-r
+        from-blue-600
+        via-indigo-600
+        to-cyan-500
+        flex
+        items-center
+        justify-center
+        text-white
+        shadow-lg
+      "
+    >
+      <Bell size={28} />
+    </div>
 
-          <input
-            type="text"
-            placeholder="Medicine Name"
-            value={medicineName}
-            onChange={(e) =>
-              setMedicineName(e.target.value)
-            }
-            className="border p-3 rounded"
-          />
+    <div>
 
-          <input
-            type="text"
-            placeholder="Dosage"
-            value={dosage}
-            onChange={(e) =>
-              setDosage(e.target.value)
-            }
-            className="border p-3 rounded"
-          />
+      <h2 className="text-4xl font-bold text-slate-800">
+        Medication Reminders
+      </h2>
 
-          <select
-            value={frequency}
-            onChange={(e) =>
-              handleFrequencyChange(
-                e.target.value
-              )
-            }
-            className="border p-3 rounded"
-          >
+      <p className="text-slate-500">
+        Stay consistent with your medicine schedule
+      </p>
+      <p className="text-sm text-blue-600 font-medium mt-1">
+    {reminders.length} active reminder(s)
+  </p>
 
-            <option>
-              Once Daily
-            </option>
+    </div>
 
-            <option>
-              Twice Daily
-            </option>
+  </div>
 
-            <option>
-              Thrice Daily
-            </option>
+  <div className="grid md:grid-cols-5 gap-4 mb-6">
 
-          </select>
+    <input
+      type="text"
+      placeholder="Medicine Name"
+      value={medicineName}
+      onChange={(e) =>
+        setMedicineName(e.target.value)
+      }
+      className="border border-slate-200 p-4 rounded-2xl min-w-[180px]"
+    />
 
-          <input
-            type="number"
-            placeholder="Duration Days"
-            value={durationDays}
-            onChange={(e) =>
-              setDurationDays(e.target.value)
-            }
-            className="border p-3 rounded"
-          />
+    <input
+      type="text"
+      placeholder="Dosage"
+      value={dosage}
+      onChange={(e) =>
+        setDosage(e.target.value)
+      }
+      className="border border-slate-200 p-4 rounded-2xl min-w-[180px]"
+    />
 
-          <button
-            onClick={addReminder}
-            className="bg-green-600 text-white rounded"
-          >
-            Add Reminder
-          </button>
+    <select
+      value={frequency}
+      onChange={(e) =>
+        handleFrequencyChange(
+          e.target.value
+        )
+      }
+      className="border border-slate-200 p-4 rounded-2xl min-w-[180px]"
+    >
 
-        </div>
+      <option>
+        Once Daily
+      </option>
 
-        <div className="flex gap-5 mb-8">
+      <option>
+        Twice Daily
+      </option>
 
-          {
-            times.map((time, index) => (
+      <option>
+        Thrice Daily
+      </option>
 
-              <input
-                key={index}
-                type="time"
-                value={time}
-                onChange={(e) =>
-                  handleTimeChange(
-                    index,
-                    e.target.value
-                  )
-                }
-                className="border p-3 rounded"
-              />
+    </select>
 
-            ))
+    <input
+      type="number"
+      placeholder="Duration Days"
+      value={durationDays}
+      onChange={(e) =>
+        setDurationDays(e.target.value)
+      }
+      className="border border-slate-200 p-4 rounded-2xl min-w-[180px]"
+    />
+
+    <button
+      onClick={addReminder}
+      className="
+        bg-gradient-to-r
+        from-blue-600
+        via-indigo-600
+        to-cyan-500
+        text-white
+        rounded-2xl
+        font-semibold
+        shadow-lg
+        hover:scale-105
+        transition-all
+      "
+    >
+      Add Reminder
+    </button>
+
+  </div>
+
+  <div className="flex gap-4 mb-8 flex-wrap">
+
+    {
+      times.map((time, index) => (
+
+        <input
+          key={index}
+          type="time"
+          value={time}
+          onChange={(e) =>
+            handleTimeChange(
+              index,
+              e.target.value
+            )
           }
+          className="
+            border
+            border-slate-200
+            p-4
+            rounded-2xl
+          "
+        />
+
+      ))
+    }
+
+  </div>
+
+  <div className="grid gap-5">
+
+    {
+      reminders.map((reminder) => (
+
+        <div
+          key={reminder.id}
+          className="
+            bg-gradient-to-br
+            from-white
+            to-slate-50
+            border
+            border-slate-200
+            rounded-3xl
+            p-6
+            shadow-md
+            hover:shadow-xl
+            hover:-translate-y-1
+            transition-all
+            duration-300
+          "
+        >
+
+          <div className="flex justify-between items-start">
+
+            <div>
+
+              <div className="flex items-center gap-3 mb-3">
+
+                <Pill
+                  size={20}
+                  className="text-blue-600"
+                />
+
+                <h3 className="font-bold text-xl text-slate-800">
+
+                  {reminder.medicine_name}
+
+                </h3>
+
+              </div>
+
+              <p className="text-slate-600 mb-2">
+                Dosage: {reminder.dosage}
+              </p>
+
+              <p className="text-slate-600 mb-2">
+                Frequency: {reminder.frequency}
+              </p>
+
+              <p className="text-slate-600 mb-2">
+                Time: {reminder.reminder_times}
+              </p>
+
+              <p className="text-slate-500">
+                Ends: {reminder.end_date}
+              </p>
+
+            </div>
+
+            <Clock
+              size={26}
+              className="text-cyan-500"
+            />
+
+          </div>
+
+          <div className="flex gap-3 mt-6 flex-wrap">
+
+            <button
+              onClick={() =>
+                markTaken(reminder.id)
+              }
+              className="
+                flex
+                items-center
+                gap-2
+                bg-green-500
+                hover:bg-green-600
+                text-white
+                px-4
+                py-2
+                rounded-xl
+                transition
+              "
+            >
+              <CheckCircle size={16} />
+              Taken
+            </button>
+
+            <button
+              onClick={() =>
+                markMissed(reminder.id)
+              }
+              className="
+                flex
+                items-center
+                gap-2
+                bg-yellow-500
+                hover:bg-yellow-600
+                text-white
+                px-4
+                py-2
+                rounded-xl
+                transition
+              "
+            >
+              <AlertCircle size={16} />
+              Missed
+            </button>
+
+            <button
+              onClick={() =>
+                deleteReminder(reminder.id)
+              }
+              className="
+                flex
+                items-center
+                gap-2
+                bg-red-500
+                hover:bg-red-600
+                text-white
+                px-4
+                py-2
+                rounded-xl
+                transition
+              "
+            >
+              <Trash2 size={16} />
+              Delete
+            </button>
+
+          </div>
 
         </div>
+
+      ))
+    }
+
+  </div>
+
+</div>
+{/* NEARBY PHARMACIES */}
+
+<div className="bg-white p-10 rounded-3xl shadow-xl mt-10">
+
+  <div className="flex justify-between items-center mb-8">
+
+    <div className="flex items-center gap-4">
+
+  <div
+    className="
+      w-12
+      h-12
+      rounded-2xl
+      bg-gradient-to-r
+      from-blue-600
+      via-indigo-600
+      to-cyan-500
+      flex
+      items-center
+      justify-center
+      text-white
+      shadow-lg
+    "
+  >
+    <MapPin size={24} />
+  </div>
+
+  <div>
+
+    <h2 className="text-4xl font-bold text-slate-800">
+      Nearby Pharmacies
+    </h2>
+
+    <p className="text-slate-500 mt-1">
+      {pharmacies.length > 0
+        ? `${pharmacies.length} pharmacies found nearby`
+        : "Find pharmacies around your location"}
+    </p>
+
+  </div>
+
+</div>
+
+    <button
+      onClick={searchPharmacies}
+      className="
+        px-6
+        py-3
+        rounded-2xl
+        text-white
+        font-semibold
+        bg-gradient-to-r
+        from-blue-600
+        via-indigo-600
+        to-cyan-500
+        shadow-lg
+        hover:scale-105
+        transition-all
+      "
+    >
+      Find Nearby Pharmacies
+    </button>
+
+  </div>
+
+  {
+    pharmacies.length > 0 ? (
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         {
-          reminders.map((reminder) => (
+          pharmacies.filter(
+      (pharmacy) =>
+        pharmacy.name &&
+        pharmacy.name !== "Unknown Pharmacy" &&
+        /^[A-Za-z0-9\s&.,'-]+$/.test(pharmacy.name)
+    ).map((pharmacy, index) => (
 
             <div
-              key={reminder.id}
-              className="border p-5 rounded-xl mb-5 flex justify-between items-center"
+              key={index}
+              className="
+                bg-gradient-to-br
+                from-white
+                to-slate-50
+                border
+                border-slate-200
+                rounded-3xl
+                p-6
+                shadow-md
+                hover:shadow-xl
+                hover:-translate-y-1
+                transition-all
+                duration-300
+              "
             >
 
-              <div>
+              <div className="flex justify-between items-start mb-4">
 
-                <p>
-                  <strong>Medicine:</strong>
-                  {" "}
-                  {reminder.medicine_name}
+                <h3 className="text-xl font-bold text-slate-800">
+
+                  {
+                    pharmacy.name ||
+                    "Unknown Pharmacy"
+                  }
+
+                </h3>
+
+                <span
+                  className="
+                    bg-green-100
+                    text-green-700
+                    px-3
+                    py-1
+                    rounded-full
+                    text-xs
+                    font-semibold
+                  "
+                >
+                  Nearby
+                </span>
+
+              </div>
+
+              <p className="text-slate-600 mb-4 leading-relaxed">
+
+                {
+                  pharmacy.address ||
+                  "Address not available"
+                }
+
+              </p>
+
+              <div
+                className="
+                  bg-blue-50
+                  rounded-2xl
+                  p-3
+                  mb-4
+                "
+              >
+
+                <p className="text-sm text-slate-500">
+                  Source
                 </p>
 
-                <p>
-                  <strong>Dosage:</strong>
-                  {" "}
-                  {reminder.dosage}
-                </p>
+                <p className="font-medium text-blue-700">
 
-                <p>
-                  <strong>Frequency:</strong>
-                  {" "}
-                  {reminder.frequency}
-                </p>
+                  {pharmacy.source}
 
-                <p>
-                  <strong>Times:</strong>
-                  {" "}
-                  {reminder.reminder_times}
-                </p>
-
-                <p>
-                  <strong>Ends:</strong>
-                  {" "}
-                  {reminder.end_date}
                 </p>
 
               </div>
-              <div className="flex gap-3 mt-4">
 
-  <button
-    onClick={() =>
-      markTaken(reminder.id)
-    }
-    className="bg-green-500 text-white px-4 py-2 rounded"
-  >
-    Taken
-  </button>
-
-  <button
-    onClick={() =>
-      markMissed(reminder.id)
-    }
-    className="bg-yellow-500 text-white px-4 py-2 rounded"
-  >
-    Missed
-  </button>
-
-</div>
-              <button
-                onClick={() =>
-                  deleteReminder(reminder.id)
-                }
-                className="bg-red-500 text-white px-5 py-2 rounded"
+              <a
+                href={pharmacy.map_url}
+                target="_blank"
+                rel="noreferrer"
+                className="
+                  inline-flex
+                  items-center
+                  gap-2
+                  px-4
+                  py-2
+                  rounded-xl
+                  bg-blue-600
+                  text-white
+                  hover:bg-blue-700
+                  transition-all
+                "
               >
-                Delete
-              </button>
+                Open in Maps
+              </a>
 
             </div>
 
@@ -1183,86 +1916,30 @@ function Dashboard() {
 
       </div>
 
-      {/* NEARBY PHARMACIES */}
+    ) : (
 
-      <div className="bg-white p-10 rounded-2xl shadow-xl mt-10">
+      <div
+        className="
+          text-center
+          py-16
+          rounded-3xl
+          bg-slate-50
+          border
+          border-dashed
+          border-slate-300
+        "
+      >
 
-        <h2 className="text-3xl font-bold mb-6">
-
-          Nearby Pharmacies
-
-        </h2>
-
-        <button
-          onClick={searchPharmacies}
-          className="bg-blue-600 text-white px-8 py-3 rounded-xl mb-6"
-        >
-          Find Nearby Pharmacies
-        </button>
-
-        {
-  pharmacies.length > 0 ? (
-
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-      {
-        pharmacies.map((pharmacy, index) => (
-
-          <div
-            key={index}
-            className="border p-5 rounded-xl bg-white shadow"
-          >
-
-            <h3 className="text-xl font-bold mb-3">
-
-              {
-                pharmacy.name ||
-                "Unknown Pharmacy"
-              }
-
-            </h3>
-
-            <p className="mb-3 text-gray-700">
-
-              {
-                pharmacy.address ||
-                "Address not available"
-              }
-
-            </p>
-
-            <p className="text-sm text-green-600 mb-3">
-
-              Source:
-              {" "}
-              {pharmacy.source}
-
-            </p>
-
-            <a
-              href={pharmacy.map_url}
-              target="_blank"
-              rel="noreferrer"
-              className="text-blue-600 underline"
-            >
-              Open in Maps
-            </a>
-
-          </div>
-
-        ))
-      }
-
-    </div>
-
-  ) : (
-
-    <p>No pharmacies found yet</p>
-
-  )
-}
+        <p className="text-slate-500 text-lg">
+          No pharmacies found yet
+        </p>
 
       </div>
+
+    )
+  }
+
+</div>
 
     </div>
   );
