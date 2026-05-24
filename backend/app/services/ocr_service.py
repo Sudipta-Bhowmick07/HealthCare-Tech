@@ -1,19 +1,43 @@
-import easyocr
+import os
+import requests
 
-reader = easyocr.Reader(
-    ["en"],
-    gpu=False
+
+OCR_SPACE_API_KEY = os.getenv(
+    "OCR_SPACE_API_KEY"
 )
+
 
 def extract_text_from_image(
     image_path: str
 ):
 
-    results = reader.readtext(
+    with open(
         image_path,
-        detail=0
-    )
+        "rb"
+    ) as image_file:
 
-    text = "\n".join(results)
+        response = requests.post(
+            "https://api.ocr.space/parse/image",
+            files={
+                "file": image_file
+            },
+            data={
+                "apikey": OCR_SPACE_API_KEY,
+                "language": "eng"
+            }
+        )
 
-    return text
+    result = response.json()
+
+    if (
+        "ParsedResults" not in result
+        or
+        not result["ParsedResults"]
+    ):
+        return ""
+
+    return result[
+        "ParsedResults"
+    ][0][
+        "ParsedText"
+    ]
