@@ -331,7 +331,14 @@ function Dashboard() {
 
       console.log(error);
 
-      alert("Upload failed");
+      console.log(
+    error.response?.data
+  );
+
+  alert(
+    error.response?.data?.detail ||
+    "Upload failed"
+  );
     }
   };
 
