@@ -111,7 +111,7 @@ function Dashboard() {
   try {
 
     const response = await axios.get(
-      "http://127.0.0.1:8000/auth/me",
+      "https://medassist-ai-backend-l0r5.onrender.com/auth/me",
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -135,7 +135,7 @@ function Dashboard() {
     try {
 
       const response = await axios.get(
-        "http://127.0.0.1:8000/ocr/history",
+        "https://medassist-ai-backend-l0r5.onrender.com/ocr/history",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -189,7 +189,7 @@ function Dashboard() {
       selectedItems.map((id) =>
 
         axios.delete(
-          `http://127.0.0.1:8000/ocr/history/${id}`,
+          `https://medassist-ai-backend-l0r5.onrender.com/ocr/history/${id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -229,7 +229,7 @@ function Dashboard() {
     try {
 
       const response = await axios.get(
-        "http://127.0.0.1:8000/reminders/my-reminders",
+        "https://medassist-ai-backend-l0r5.onrender.com/reminders/my-reminders",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -257,7 +257,7 @@ function Dashboard() {
   try {
 
     const response = await axios.get(
-      "http://127.0.0.1:8000/adherence/analytics",
+      "https://medassist-ai-backend-l0r5.onrender.com/adherence/analytics",
       {
         headers: {
         Authorization: `Bearer ${token}`,
@@ -305,7 +305,7 @@ function Dashboard() {
     try {
 
       const response = await axios.post(
-        "http://127.0.0.1:8000/ocr/upload",
+        "https://medassist-ai-backend-l0r5.onrender.com/ocr/upload",
         formData,
         {
           headers: {
@@ -391,7 +391,7 @@ function Dashboard() {
     try {
 
       await axios.post(
-        "http://127.0.0.1:8000/reminders/add",
+        "https://medassist-ai-backend-l0r5.onrender.com/reminders/add",
         {
           medicine_name: medicineName,
           dosage: dosage,
@@ -433,7 +433,7 @@ function Dashboard() {
     try {
 
       await axios.delete(
-        `http://127.0.0.1:8000/reminders/${id}`,
+        `https://medassist-ai-backend-l0r5.onrender.com/reminders/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -479,7 +479,7 @@ function Dashboard() {
 
           const response = await axios.get(
 
-            `http://127.0.0.1:8000/pharmacy/nearby?lat=${lat}&lon=${lon}`
+            `https://medassist-ai-backend-l0r5.onrender.com/pharmacy/nearby?lat=${lat}&lon=${lon}`
 
           );
 
@@ -515,7 +515,7 @@ function Dashboard() {
   try {
 
     await axios.post(
-      `http://127.0.0.1:8000/adherence/taken/${id}`,
+      `https://medassist-ai-backend-l0r5.onrender.com/adherence/taken/${id}`,
       {},
       {
         headers: {
@@ -542,7 +542,7 @@ function Dashboard() {
     try {
 
       await axios.post(
-        `http://127.0.0.1:8000/adherence/missed/${id}`,
+        `https://medassist-ai-backend-l0r5.onrender.com/adherence/missed/${id}`,
         {},
         {
           headers: {
@@ -1155,7 +1155,7 @@ function Dashboard() {
             </div>
 
             <a
-              href={`http://127.0.0.1:8000${item?.pdf_download}`}
+              href={`https://medassist-ai-backend-l0r5.onrender.com${item?.pdf_download}`}
               target="_blank"
               rel="noreferrer"
               className="

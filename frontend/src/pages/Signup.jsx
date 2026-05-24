@@ -38,7 +38,7 @@ function Signup() {
   const handleSignup = async () => {
     try {
       await axios.post(
-        "http://127.0.0.1:8000/auth/signup",
+        "https://medassist-ai-backend-l0r5.onrender.com/auth/signup",
         formData
       );
 
