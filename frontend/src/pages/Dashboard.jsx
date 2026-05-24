@@ -111,7 +111,7 @@ function Dashboard() {
   try {
 
     const response = await axios.get(
-      "https://medassist-ai-backend-l0r5.onrender.com/auth/me",
+      "https://medassist-ai-backend-xyz6.onrender.com/auth/me",
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -135,7 +135,7 @@ function Dashboard() {
     try {
 
       const response = await axios.get(
-        "https://medassist-ai-backend-l0r5.onrender.com/ocr/history",
+        "https://medassist-ai-backend-xyz6.onrender.com/ocr/history",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -189,7 +189,7 @@ function Dashboard() {
       selectedItems.map((id) =>
 
         axios.delete(
-          `https://medassist-ai-backend-l0r5.onrender.com/ocr/history/${id}`,
+          `https://medassist-ai-backend-xyz6.onrender.com/ocr/history/${id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -229,7 +229,7 @@ function Dashboard() {
     try {
 
       const response = await axios.get(
-        "https://medassist-ai-backend-l0r5.onrender.com/reminders/my-reminders",
+        "https://medassist-ai-backend-xyz6.onrender.com/reminders/my-reminders",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -257,7 +257,7 @@ function Dashboard() {
   try {
 
     const response = await axios.get(
-      "https://medassist-ai-backend-l0r5.onrender.com/adherence/analytics",
+      "https://medassist-ai-backend-xyz6.onrender.com/adherence/analytics",
       {
         headers: {
         Authorization: `Bearer ${token}`,
@@ -305,7 +305,7 @@ function Dashboard() {
     try {
 
       const response = await axios.post(
-        "https://medassist-ai-backend-l0r5.onrender.com/ocr/upload",
+        "https://medassist-ai-backend-xyz6.onrender.com/ocr/upload",
         formData,
         {
           headers: {
@@ -398,7 +398,7 @@ function Dashboard() {
     try {
 
       await axios.post(
-        "https://medassist-ai-backend-l0r5.onrender.com/reminders/add",
+        "https://medassist-ai-backend-xyz6.onrender.com/reminders/add",
         {
           medicine_name: medicineName,
           dosage: dosage,
@@ -440,7 +440,7 @@ function Dashboard() {
     try {
 
       await axios.delete(
-        `https://medassist-ai-backend-l0r5.onrender.com/reminders/${id}`,
+        `https://medassist-ai-backend-xyz6.onrender.com/reminders/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -486,7 +486,7 @@ function Dashboard() {
 
           const response = await axios.get(
 
-            `https://medassist-ai-backend-l0r5.onrender.com/pharmacy/nearby?lat=${lat}&lon=${lon}`
+            `https://medassist-ai-backend-xyz6.onrender.com/pharmacy/nearby?lat=${lat}&lon=${lon}`
 
           );
 
@@ -522,7 +522,7 @@ function Dashboard() {
   try {
 
     await axios.post(
-      `https://medassist-ai-backend-l0r5.onrender.com/adherence/taken/${id}`,
+      `https://medassist-ai-backend-xyz6.onrender.com/adherence/taken/${id}`,
       {},
       {
         headers: {
@@ -549,7 +549,7 @@ function Dashboard() {
     try {
 
       await axios.post(
-        `https://medassist-ai-backend-l0r5.onrender.com/adherence/missed/${id}`,
+        `https://medassist-ai-backend-xyz6.onrender.com/adherence/missed/${id}`,
         {},
         {
           headers: {

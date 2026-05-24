@@ -46,7 +46,7 @@ function Login() {
     try {
       const response =
         await axios.post(
-          "https://medassist-ai-backend-l0r5.onrender.com/auth/login",
+          "https://medassist-ai-backend-xyz6.onrender.com/auth/login",
           formData
         );
 
