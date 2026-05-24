@@ -28,7 +28,8 @@ def extract_text_from_image(
         )
 
     result = response.json()
-
+    print("OCR RESPONSE:")
+    print(result)
     if (
         "ParsedResults" not in result
         or

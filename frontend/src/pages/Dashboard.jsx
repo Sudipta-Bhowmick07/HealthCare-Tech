@@ -1162,7 +1162,7 @@ function Dashboard() {
             </div>
 
             <a
-              href={`https://medassist-ai-backend-l0r5.onrender.com${item?.pdf_download}`}
+              href={item?.pdf_download}
               target="_blank"
               rel="noreferrer"
               className="
