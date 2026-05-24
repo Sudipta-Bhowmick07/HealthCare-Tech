@@ -20,6 +20,8 @@ from app.models.user import User
 
 from app.services.ocr_service import extract_text_from_image
 
+from app.services.cloudinary_service import upload_file
+
 from app.utils.pdf_generator import create_prescription_pdf
 
 from app.auth.security import get_current_user
@@ -72,6 +74,11 @@ async def upload_prescription(
                 file.file,
                 buffer
             )
+            
+        image_url = upload_file(
+            file_path,
+            "prescriptions"
+        )
 
         extracted_text = extract_text_from_image(
             file_path
@@ -109,11 +116,18 @@ async def upload_prescription(
             pdf_path
         )
 
+        pdf_url = upload_file(
+            pdf_path,
+            "prescription_pdfs"
+        )
+
         prescription = Prescription(
             filename=unique_filename,
             extracted_text=extracted_text,
             medicines=", ".join(medicines),
             pdf_filename=pdf_filename,
+            image_url=image_url,
+            pdf_url=pdf_url,
             user_id=current_user.id
         )
 
@@ -141,7 +155,7 @@ async def upload_prescription(
                 interaction_warnings,
 
             "pdf_download":
-                f"/ocr/download/{pdf_filename}"
+                pdf_url
         }
 
     except Exception as e:
@@ -182,8 +196,11 @@ def get_history(
             "created_at":
                 item.created_at,
 
+            "image_url":
+                item.image_url,
+
             "pdf_download":
-                f"/ocr/download/{item.pdf_filename}"
+                item.pdf_url
         })
 
     return history

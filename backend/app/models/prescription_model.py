@@ -47,6 +47,16 @@ class Prescription(Base):
         default=datetime.utcnow
     )
 
+    image_url = Column(
+        String,
+        nullable=True
+    )
+
+    pdf_url = Column(
+        String,
+        nullable=True
+    )
+    
     user_id = Column(
         Integer,
         ForeignKey("users.id")
