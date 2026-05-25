@@ -11,10 +11,16 @@ cloudinary.config(
 
 def upload_file(file_path, folder):
 
+    resource_type = (
+        "raw"
+        if file_path.lower().endswith(".pdf")
+        else "image"
+    )
+
     result = cloudinary.uploader.upload(
         file_path,
         folder=folder,
-        resource_type="auto"
+        resource_type=resource_type
     )
 
     return result["secure_url"]
