@@ -116,9 +116,8 @@ async def upload_prescription(
             pdf_path
         )
       
-
-        print("PDF EXISTS:", os.path.exists(pdf_path))
-        print("PDF SIZE:", os.path.getsize(pdf_path))
+        with open(pdf_path, "rb") as f:
+            print("PDF HEADER:", f.read(20))
         
         pdf_url = upload_file(
             pdf_path,
