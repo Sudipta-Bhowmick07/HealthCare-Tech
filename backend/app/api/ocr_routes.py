@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 import shutil
 import os
 import uuid
-
+import os
 from app.database.db import SessionLocal
 from app.models.prescription_model import Prescription
 from app.models.user import User
@@ -115,7 +115,11 @@ async def upload_prescription(
             medicines,
             pdf_path
         )
+      
 
+        print("PDF EXISTS:", os.path.exists(pdf_path))
+        print("PDF SIZE:", os.path.getsize(pdf_path))
+        
         pdf_url = upload_file(
             pdf_path,
             "prescription_pdfs"
