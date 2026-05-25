@@ -6,20 +6,22 @@ from fastapi import (
     HTTPException
 )
 
-from fastapi.responses import RedirectResponse
+from fastapi.responses import FileResponse
 
 from sqlalchemy.orm import Session
 
 import shutil
 import os
 import uuid
-
+import os
 from app.database.db import SessionLocal
 from app.models.prescription_model import Prescription
 from app.models.user import User
 
 from app.services.ocr_service import extract_text_from_image
+
 from app.services.cloudinary_service import upload_file
+
 from app.utils.pdf_generator import create_prescription_pdf
 
 from app.auth.security import get_current_user
@@ -35,10 +37,7 @@ router = APIRouter(
 
 UPLOAD_FOLDER = "uploads"
 
-os.makedirs(
-    UPLOAD_FOLDER,
-    exist_ok=True
-)
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 def get_db():
@@ -75,7 +74,7 @@ async def upload_prescription(
                 file.file,
                 buffer
             )
-
+            
         image_url = upload_file(
             file_path,
             "prescriptions"
@@ -93,6 +92,10 @@ async def upload_prescription(
 
             if len(clean_line) > 2:
                 medicines.append(clean_line)
+
+        # =====================================
+        # DRUG INTERACTION CHECK
+        # =====================================
 
         interaction_warnings = check_interactions(
             medicines
@@ -112,13 +115,10 @@ async def upload_prescription(
             medicines,
             pdf_path
         )
-
+      
         with open(pdf_path, "rb") as f:
-            print(
-                "PDF HEADER:",
-                f.read(20)
-            )
-
+            print("PDF HEADER:", f.read(20))
+        
         pdf_url = upload_file(
             pdf_path,
             "prescription_pdfs"
@@ -134,15 +134,11 @@ async def upload_prescription(
             user_id=current_user.id
         )
 
-        db.add(
-            prescription
-        )
+        db.add(prescription)
 
         db.commit()
 
-        db.refresh(
-            prescription
-        )
+        db.refresh(prescription)
 
         return {
 
@@ -162,7 +158,7 @@ async def upload_prescription(
                 interaction_warnings,
 
             "pdf_download":
-                f"/ocr/download/{prescription.id}"
+                pdf_url
         }
 
     except Exception as e:
@@ -207,11 +203,12 @@ def get_history(
                 item.image_url,
 
             "pdf_download":
-                f"/ocr/download/{item.id}"
-
+                item.pdf_url
         })
 
     return history
+
+
 
 
 @router.delete("/history/{prescription_id}")
@@ -235,39 +232,34 @@ def delete_history(
             detail="Prescription not found"
         )
 
-    db.delete(
-        prescription
-    )
+    db.delete(prescription)
 
     db.commit()
 
     return {
-        "message":
-            "Prescription deleted successfully"
+        "message": "Prescription deleted successfully"
     }
 
 
-@router.get("/download/{prescription_id}")
-def download_pdf(
-    prescription_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
 
-    prescription = db.query(
-        Prescription
-    ).filter(
-        Prescription.id == prescription_id,
-        Prescription.user_id == current_user.id
-    ).first()
 
-    if not prescription:
+@router.get("/download/{filename}")
+def download_pdf(filename: str):
+
+    file_path = os.path.join(
+        UPLOAD_FOLDER,
+        filename
+    )
+
+    if not os.path.exists(file_path):
 
         raise HTTPException(
             status_code=404,
-            detail="Prescription not found"
+            detail="PDF not found"
         )
 
-    return RedirectResponse(
-        url=prescription.pdf_url
+    return FileResponse(
+        path=file_path,
+        filename=filename,
+        media_type="application/pdf"
     )
